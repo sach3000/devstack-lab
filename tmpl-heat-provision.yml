@@ -1,0 +1,59 @@
+heat_template_version: 2018-08-31
+
+parameters:
+  instance_name:
+    type: string
+    description: VM Name
+    constraints:
+      - allowed_pattern: "[a-zA-Z0-9_]+"
+
+  key_name:
+    type: string
+    description: keypair to enable SSH access to the instance.
+    default: stack-ssh
+
+  flavor:
+    type: string
+    label: Instance Type
+    default: ds1G
+    description: Type of instance (flavor) to be used
+
+  image:
+    type: string
+    label: Image ID
+    default: Fedora-Cloud-Base-32-1.6.x86_64
+    description: Image to be used for compute instance
+
+  net:
+    type: string
+    label: Net name
+    default: heat-net
+    description: Network ID to use for the instance
+
+  server_group:
+    type: string
+    default: 4aa87473-caba-4ae4-949e-0a4cc2c164ba
+    description: Adding instance to Server Group
+
+resources:
+  heatinstance:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: instance_name }
+      flavor: { get_param: flavor }
+      image: { get_param: image }
+      networks:
+        - network: { get_param: net}
+      key_name: stack-ssh
+      security_groups:
+        - default
+      scheduler_hints:
+        group: { get_param: server_group }
+
+outputs:
+  heat_server_name:
+    description: Name of the instance
+    value: { get_attr: [heatinstance, name]}
+  heat_server_ip:
+    description: IP Address of the deployed heat_server instance
+    value: { get_attr: [heatinstance, first_address]} 
